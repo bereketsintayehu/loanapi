@@ -78,11 +78,6 @@ func (ur *UserRepositoryImpl) IsVerified(userID primitive.ObjectID) (bool, error
 }
 
 func (ur *UserRepositoryImpl) Register(user domain.User) error {
-
-	// isUserExist := ur.collection.FindOne(context.Background(), map[string]string{"username": user.Username}).Err()
-	// if isUserExist == nil {
-	// 	return errors.New("user already exists")
-	// }
 	_, err := ur.collection.InsertOne(context.Background(), user)
 	return err
 }
@@ -108,7 +103,6 @@ func (ur *UserRepositoryImpl) GetUserByUsername(username string) (domain.User, e
 func (ur *UserRepositoryImpl) ActivateAccount(token, email string) error {
 	var user domain.User
 
-	// find one by email and token
 	err := ur.collection.FindOne(context.Background(), bson.M{"email": email, "activation_token": token}).Decode(&user)
 
 	if err != nil {
@@ -128,8 +122,6 @@ func (ur *UserRepositoryImpl) ActivateAccount(token, email string) error {
 
 }
 
-// rest password
-
 func (ur *UserRepositoryImpl) GetUserByEmail(email string) (domain.User, error) {
 	var user domain.User
 	err := ur.collection.FindOne(context.Background(), bson.M{"email": email}).Decode(&user)
@@ -141,7 +133,7 @@ func (ur *UserRepositoryImpl) GetUserByEmail(email string) (domain.User, error) 
 
 func (ur *UserRepositoryImpl) GetUserByResetToken(token string) (domain.User, error) {
 	var user domain.User
-	// fmt.Println(token,"***************-----------------")
+
 	err := ur.collection.FindOne(context.Background(), bson.M{"password_reset_token": token}).Decode(&user)
 	if err != nil {
 		return domain.User{}, err

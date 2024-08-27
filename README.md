@@ -1,364 +1,214 @@
-## Environment Setup
+### Loan Management System Documentation
 
-Before running the application, ensure the following environment variables are set:
+#### Overview
 
-- `SERVER_PORT`: Port on which the server will run (e.g., `":8080"`).
-- `SERVER_URL`: Base URL of the server (e.g., `"127.0.0.1"`).
-- `MONGODB_URL`: MongoDB connection string (e.g., `"mongodb+srv://<username>:<password>@cluster.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"`).
-- `JWT_SECRET`: Secret key for signing JWT tokens (e.g., `"Group3"`).
-- `JWT_REFRESH_TOKEN_SECRET`: Secret key for signing JWT refresh tokens (e.g., `"REFG55"`).
-- `ACCESS_TOKEN_EXPIRY_HOUR`: Expiry time for access tokens in hours (e.g., `2`).
-- `REFRESH_TOKEN_EXPIRY_HOUR`: Expiry time for refresh tokens in hours (e.g., `168`).
-- `RATE_LIMIT_MAX_REQUEST`: Maximum number of requests allowed within the specified time window (e.g., `10`).
-- `RATE_LIMIT_EXPIRATION_MINUTE`: Expiration time for the rate limit window in minutes (e.g., `1`).
+This documentation provides an overview of the Loan Management System, including configuration settings, routes, and examples for each API endpoint.
 
-## Endpoints Documentation
+#### Environment Configuration
 
-### 1. **Login**
+Ensure the following environment variables are set in your `.env` file:
 
-**Endpoint:** `/login`  
-**Method:** `POST`
+```env
+SERVER_PORT = ":8080"
+SERVER_URL = "127.0.0.1"
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
+MONGODB_URL = "mongodb+srv://<username>:<password>@cluster0.bd7iqjq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+JWT_SECRET = "secret"
+JWT_REFRESH_TOKEN_SECRET = "REFG55"
+ACCESS_TOKEN_EXPIRY_HOUR = 2
+REFRESH_TOKEN_EXPIRY_HOUR = 168
 ```
 
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "tokens": {
-      "access_token": "string",
-      "refresh_token": "string"
-    }
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "error": "Invalid request data"
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "error": "Invalid email or password"
-  }
-  ```
+Replace `<username>` and `<password>` with your actual MongoDB credentials.
 
-**Example:**
-```shell
-curl -X POST http://127.0.0.1:8080/login -H "Content-Type: application/json" -d '{"email": "user@example.com", "password": "password123"}'
-```
+#### Routes Setup
 
----
+The application routes are organized into different modules: User, Admin, Loan, and Log.
 
-### 2. **Refresh Token**
+##### User Routes
 
-**Endpoint:** `/refresh-token`  
-**Method:** `POST`
+**Path:** `/users`
 
-**Request Body:**
-```json
-{
-  "user_id": "1234567890",
-  "token": "refresh_token_string"
-}
-```
+**Endpoints:**
 
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "tokens": {
-      "access_token": "new_access_token",
-      "refresh_token": "new_refresh_token"
-    }
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "error": "Invalid request data"
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "error": "Invalid or expired refresh token"
-  }
-  ```
+1. **Register User**
+   - **Method:** `POST`
+   - **Endpoint:** `/users/register`
+   - **Example Request:**
+     ```json
+     {
+       "name": "John Doe",
+       "email": "john.doe@example.com",
+       "password": "password123"
+     }
+     ```
 
-**Example:**
-```shell
-curl -X POST http://127.0.0.1:8080/refresh-token -H "Content-Type: application/json" -d '{"user_id": "1234567890", "token": "refresh_token_string"}'
-```
+2. **Login**
+   - **Method:** `POST`
+   - **Endpoint:** `/users/login`
+   - **Example Request:**
+     ```json
+     {
+       "email": "john.doe@example.com",
+       "password": "password123"
+     }
+     ```
 
----
+3. **Get My Profile**
+   - **Method:** `GET`
+   - **Endpoint:** `/users/profile`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Response:**
+     ```json
+     {
+       "id": "601c9e5e68c4e031c8b9bdeb",
+       "name": "John Doe",
+       "email": "john.doe@example.com"
+     }
+     ```
 
-### 3. **Register**
+##### Admin Routes
 
-**Endpoint:** `/register`  
-**Method:** `POST`
+**Path:** `/admin`
 
-**Request Body:**
-```json
-{
-  "username": "newuser",
-  "email": "newuser@example.com",
-  "password": "password123"
-}
-```
+**Endpoints:**
 
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "message": "Registered successfully. Please check your email for account activation."
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "error": "Invalid request data"
-  }
-  ```
-- **409 Conflict**
-  ```json
-  {
-    "error": "Email already exists"
-  }
-  ```
+1. **Get Users**
+   - **Method:** `GET`
+   - **Endpoint:** `/admin/users`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Response:**
+     ```json
+     [
+       {
+         "id": "601c9e5e68c4e031c8b9bdeb",
+         "name": "John Doe",
+         "email": "john.doe@example.com"
+       },
+       {
+         "id": "601c9e5e68c4e031c8b9bded",
+         "name": "Jane Smith",
+         "email": "jane.smith@example.com"
+       }
+     ]
+     ```
 
-**Example:**
-```shell
-curl -X POST http://127.0.0.1:8080/register -H "Content-Type: application/json" -d '{"username": "newuser", "email": "newuser@example.com", "password": "password123"}'
-```
+2. **Delete User**
+   - **Method:** `DELETE`
+   - **Endpoint:** `/admin/users/:id`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Request:**
+     ```
+     DELETE /admin/users/601c9e5e68c4e031c8b9bded
+     ```
 
----
+##### Loan Routes
 
-### 4. **Activate Account**
+**Path:** `/loans`
 
-**Endpoint:** `/activate/:email/:token`  
-**Method:** `GET`
+**Endpoints:**
 
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "message": "Account activated successfully"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "error": "Invalid activation token"
-  }
-  ```
-- **404 Not Found**
-  ```json
-  {
-    "error": "Account not found"
-  }
-  ```
+1. **Create Loan**
+   - **Method:** `POST`
+   - **Endpoint:** `/loans`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Request:**
+     ```json
+     {
+       "user_id": "601c9e5e68c4e031c8b9bdeb",
+       "amount": 5000,
+       "interest_rate": 5,
+       "term": 12,
+       "reason": "Home renovation"
+     }
+     ```
 
-**Example:**
-```shell
-curl -X GET http://127.0.0.1:8080/activate/user@example.com/sometoken
-```
+2. **View Loan Status**
+   - **Method:** `GET`
+   - **Endpoint:** `/loans/:loanID`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Request:**
+     ```
+     GET /loans/601c9e5e68c4e031c8b9bded
+     ```
 
----
+3. **View All Loans (Admin)**
+   - **Method:** `GET`
+   - **Endpoint:** `/admin/loans`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Query Parameters:**
+     - `status` (optional): Filter by loan status (`pending`, `approved`, `rejected`)
+     - `order` (optional): Sort order (`asc`, `desc`)
+     - `limit` (optional): Number of records per page (default: 10)
+     - `offset` (optional): Pagination offset (default: 0)
+   - **Example Request:**
+     ```
+     GET /admin/loans?status=pending&order=asc&limit=5&offset=0
+     ```
 
-### 5. **Get My Profile**
+4. **Update Loan Status (Admin)**
+   - **Method:** `PATCH`
+   - **Endpoint:** `/admin/loans/:loanID/:status`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Request:**
+     ```
+     PATCH /admin/loans/601c9e5e68c4e031c8b9bded/approved
+     ```
 
-**Endpoint:** `/profile`  
-**Method:** `GET`
+5. **Delete Loan (Admin)**
+   - **Method:** `DELETE`
+   - **Endpoint:** `/admin/loans/:loanID`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Example Request:**
+     ```
+     DELETE /admin/loans/601c9e5e68c4e031c8b9bded
+     ```
 
-**Headers:**  
-- `Authorization: Bearer <access_token>`
+##### Log Routes
 
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "id": "1234567890",
-    "username": "user",
-    "email": "user@example.com",
-    "name": "User Name",
-    "bio": "This is my bio",
-    "role": "user",
-    "is_active": true
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "error": "Invalid or expired token"
-  }
-  ```
+**Path:** `/admin/logs`
 
-**Example:**
-```shell
-curl -X GET http://127.0.0.1:8080/profile -H "Authorization: Bearer access_token"
-```
+**Endpoints:**
 
----
+1. **View Logs (Admin)**
+   - **Method:** `GET`
+   - **Endpoint:** `/admin/logs`
+   - **Headers:**
+     - `Authorization: Bearer <access_token>`
+   - **Query Parameters:**
+     - `event` (optional): Filter by event type (`create_loan`, `update_loan_status`, etc.)
+     - `order` (optional): Sort order (`asc`, `desc`)
+     - `limit` (optional): Number of records per page (default: 10)
+     - `offset` (optional): Pagination offset (default: 0)
+   - **Example Request:**
+     ```
+     GET /admin/logs?event=view_logs&order=asc&limit=5&offset=0
+     ```
 
-### 6. **Password Reset**
+   - **Example Response:**
+     ```json
+     {
+       "logs": [
+         {
+           "event": "view_logs",
+           "details": "Logs viewed by Admin ID: 601c9e5e68c4e031c8b9bdeb",
+           "user_id": "601c9e5e68c4e031c8b9bdeb",
+           "timestamp": "2024-08-27T10:15:30Z"
+         }
+       ],
+       "current_page": 0,
+       "per_page": 5,
+       "total": 1,
+       "total_pages": 1
+     }
+     ```
 
-**Endpoint:** `/password-reset`  
-**Method:** `POST`
-
-**Request Body:**
-```json
-{
-  "email": "user@example.com"
-}
-```
-
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "status": 200,
-    "message": "Successfully sent password reset link to your email"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "error": "Invalid input"
-  }
-  ```
-- **404 Not Found**
-  ```json
-  {
-    "error": "Email not found"
-  }
-  ```
-
-**Example:**
-```shell
-curl -X POST http://127.0.0.1:8080/password-reset -H "Content-Type: application/json" -d '{"email": "user@example.com"}'
-```
-
----
-
-### 7. **Update Password**
-
-**Endpoint:** `/update-password`  
-**Method:** `POST`
-
-**Request Body:**
-```json
-{
-  "user_id": "1234567890",
-  "new_password": "newpassword123"
-}
-```
-
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "message": "Password has been reset"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "error": "Invalid input"
-  }
-  ```
-- **404 Not Found**
-  ```json
-  {
-    "error": "User not found"
-  }
-  ```
-
-**Example:**
-```shell
-curl -X POST http://127.0.0.1:8080/update-password -H "Content-Type: application/json" -d '{"user_id": "1234567890", "new_password": "newpassword123"}'
-```
-
----
-
-### 8. **Get Users (Admin Only)**
-
-**Endpoint:** `/users`  
-**Method:** `GET`
-
-**Headers:**  
-- `Authorization: Bearer <admin_access_token>`
-
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "users": [
-      {
-        "id": "1234567890",
-        "username": "user",
-        "email": "user@example.com",
-        "role": "user"
-      },
-      ...
-    ]
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "error": "Unauthorized"
-  }
-  ```
-
-**Example:**
-```shell
-curl -X GET http://127.0.0.1:8080/users -H "Authorization: Bearer admin_access_token"
-```
-
----
-
-### 9. **Delete User (Admin Only)**
-
-**Endpoint:** `/users/:id`  
-**Method:** `DELETE`
-
-**Headers:**  
-- `Authorization: Bearer <admin_access_token>`
-
-**Response:**
-- **200 OK**
-  ```json
-  {
-    "message": "User deleted successfully",
-    "user": {
-      "id": "1234567890",
-      "username": "user",
-      "email": "user@example.com"
-    }
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "error": "Unauthorized"
-  }
-  ```
-- **404 Not Found**
-  ```json
-  {
-    "error": "User not found"
-  }
-  ```
-
-**Example:**
-```shell
-curl -X DELETE http://127.0.0.1:8080/users/1234567890 -H "Authorization: Bearer admin_access_token"
-```
